@@ -32,6 +32,23 @@ var albumMarconi =
      ]
 };
 
+// Assignment 25: create third album object
+var thirdAlbum = 
+{
+     name: 'Album 3',
+     artist: 'Singer 3',
+     label: 'Label 3',
+     year: '2033',
+     albumArtUrl: 'assets/images/album_covers/15.png',
+     songs: [
+         { name: 'Song3.1', length: '1:01' },
+         { name: 'Song3.2', length: '3:02' },
+         { name: 'Song3.3', length: '4:03'},
+         { name: 'Song3.4', length: '3:04' },
+         { name: 'Song3.5', length: '2:05'}
+     ]
+};
+
 var createSongRow = function(songNumber, songName, songLength) 
 {
      
@@ -55,6 +72,8 @@ var setCurrentAlbum = function(album)
      var albumReleaseInfo = document.getElementsByClassName('album-view-release-info')[0];
      var albumImage = document.getElementsByClassName('album-cover-art')[0];
      var albumSongList = document.getElementsByClassName('album-view-song-list')[0];
+     var objAlbum = document.getElementById('objAlbum');
+ 
  
      // #2
      albumTitle.firstChild.nodeValue = album.name;
@@ -71,8 +90,29 @@ var setCurrentAlbum = function(album)
      }
 };
  
-
+var albumObj = "";
 window.onload = function() 
 {   
      setCurrentAlbum(albumPicasso);    
+     albumObj = albumPicasso;
 };
+
+
+document.getElementsByClassName("album-cover-art")[0].addEventListener("click", displayAlbum);
+function displayAlbum() 
+{
+    var albums = [albumPicasso, albumMarconi, thirdAlbum];
+    
+    var i = albums.indexOf(albumObj);
+    if (i === (albums.length)-1){ i = 0; }
+    else{ i = i+1; }   
+    
+    albumObj = albums[i];  // save album obj for next click
+    setCurrentAlbum(albums[i]);
+}
+                        
+                        
+                        
+                        
+                        
+                        
