@@ -48,11 +48,23 @@ var createSongRow = function(songNumber, songName, songLength)
 
 var findParentbyClassName = function(element, className)
 {
-    var parent = element.parentElement;
+    var parent = null;
     
-    while(parent.className != className && parent.nodeName != 'body' )
-    { parent = parent.parentElement; }
-        
+    // check for existence of parent
+    if( parent = element.parentElement )
+    { 
+        // check for last possible parent; avoid infinite loop; 
+        if( parent.nodeName.toUpperCase() != 'BODY' )
+        {
+            while(parent.className != className && parent.nodeName != 'body' )
+            { parent = parent.parentElement; }
+        }
+        // parent with param className not found
+        else{ alert("No parent found with that class name"); }
+    }
+    else // element param has no parent
+    { alert("No parent found"); }
+    
     return parent;  
     
     // ??? check != body; maybe exit sooner
