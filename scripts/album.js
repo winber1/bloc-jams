@@ -34,6 +34,7 @@ var createSongRow = function(songNumber, songName, songLength)
              {  
                  $(this).html(pauseButtonTemplate); 
                  currentSoundFile.play();
+                 updateSeekBarWhileSongPlays();
              }
              else
              { 
@@ -46,12 +47,19 @@ var createSongRow = function(songNumber, songName, songLength)
          // change row selection to pause button
          else 
          { 
+             // set current volume thumb and fill
+             var $volumeFill = $('.volume .fill');
+             var $volumeThumb = $('.volume .thumb');
+             $volumeFill.width(currentVolume + '%');
+             $volumeThumb.css({left: currentVolume + '%'});
+             
              $(this).html(pauseButtonTemplate);  
              //currentlyPlayingSongNumber = songNbr; 
              //currentSongFromAlbum = currentAlbum.songs[songNbr - 1];
              setSong(songNbr);
              songPaused = false;
              currentSoundFile.play();
+             updateSeekBarWhileSongPlays();
          } 
          
          updatePlayerBarSong();
@@ -110,6 +118,12 @@ var setSong = function(songNumber)
     setVolume(currentVolume);
 };
 
+ var seek = function(time) 
+ {
+     if (currentSoundFile) 
+     {  currentSoundFile.setTime(time);  }
+ }
+ 
  var setVolume = function(volume) 
  {
      if (currentSoundFile) {  currentSoundFile.setVolume(volume);  }
@@ -145,6 +159,99 @@ var setCurrentAlbum = function(album)
      }
 };
 
+var updateSeekBarWhileSongPlays = function() 
+{
+     if (currentSoundFile) 
+     {
+         // bind custom Buzz event 'timeupdate' to music file
+         currentSoundFile.bind('timeupdate', function(event) 
+         {
+             // use Buzz's getTime() to find Fill ratio
+             var seekBarFillRatio = this.getTime() / this.getDuration();
+             var $seekBar = $('.seek-control .seek-bar');
+ 
+             updateSeekPercentage($seekBar, seekBarFillRatio);
+         });
+     }
+};
+
+var updateSeekPercentage = function($seekBar, seekBarFillRatio) 
+{
+    var offsetXPercent = seekBarFillRatio * 100;
+    
+    // set song Control or Volume based on slider movement  
+ /*
+    if($seekBar.parent().hasClass("seek-control"))
+    { seek( seekBarFillRatio * currentSoundFile.getDuration()  ); }
+    else //if($seekBar.parent().hasClass("ion-volume-high icon"))  
+    { setVolume(  seekBarFillRatio *100  ); }
+*/
+    
+    // check range; must be 0-100, includsive
+    offsetXPercent = Math.max(0, offsetXPercent);
+    offsetXPercent = Math.min(100, offsetXPercent);
+ 
+    // set slider fill and thumb classes with percentage
+    var percentageString = offsetXPercent + '%';
+    $seekBar.find('.fill').width(percentageString);
+    $seekBar.find('.thumb').css({left: percentageString});   
+ };
+
+var setupSeekBars = function() 
+{
+     var $seekBars = $('.player-bar .seek-bar');
+
+     $seekBars.click(function(event) 
+     {
+         // get X point of click and % of slider clicked
+         // offsetXvar: length of left slide of slider to click
+         // barWidth: length of slider
+         offsetX = event.pageX - $(this).offset().left;
+         var barWidth = $(this).width();
+         var seekBarFillRatio = offsetX / barWidth;
+
+    // set song Control or Volume based on slider movement  
+    if($seekBar.parent().hasClass("seek-control"))
+    { seek( seekBarFillRatio * currentSoundFile.getDuration()  ); }
+    else   
+    { setVolume(  seekBarFillRatio *100  ); }
+ 
+         // set slider
+         updateSeekPercentage($(this), seekBarFillRatio);
+     });
+
+     // add mousedown event to element with .thumb class
+     $seekBars.find('.thumb').mousedown(function(event) 
+     {
+        // .thumb's (this) parent has .seek-bar
+        var $seekBar = $(this).parent();
+ 
+        // namespace event listener
+        // allow user to mousemove on document, specific to .thumb
+        $(document).bind('mousemove.thumb', function(event)
+        {
+            var offsetX = event.pageX - $seekBar.offset().left;
+            var barWidth = $seekBar.width();
+            var seekBarFillRatio = offsetX / barWidth;
+          
+    // set song Control or Volume based on slider movement  
+    if($seekBar.parent().hasClass("seek-control"))
+    { seek( seekBarFillRatio * currentSoundFile.getDuration()  ); }
+    else 
+    { setVolume(  seekBarFillRatio *100  ); } 
+         
+            updateSeekPercentage($seekBar, seekBarFillRatio);
+        });
+ 
+        // release mousemove behavior 
+        $(document).bind('mouseup.thumb', function() 
+        {
+             $(document).unbind('mousemove.thumb');
+             $(document).unbind('mouseup.thumb');
+        });
+     });   
+ };
+
 var trackIndex = function(album, song) 
 {
      return album.songs.indexOf(song);
@@ -164,6 +271,7 @@ var nextSong = function()
     // set next song
     setSong(nextIdx+1);
     currentSoundFile.play();
+    updateSeekBarWhileSongPlays();
     updatePlayerBarSong();
     
     // set next song row to pause button
@@ -185,6 +293,7 @@ var previousSong = function()
     // set next song 
     setSong(nextIdx+1);
     currentSoundFile.play();
+    updateSeekBarWhileSongPlays();
     updatePlayerBarSong();
     
     // set next song row to pause button
@@ -226,6 +335,7 @@ var playerBarPauseButton = '<span class="ion-pause"></span>';
 $(document).ready(function()
 { 
     setCurrentAlbum(albumPicasso);
+    setupSeekBars();
     $previousButton.click(previousSong);
     $nextButton.click(nextSong);
 });
