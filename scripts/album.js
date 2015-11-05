@@ -234,11 +234,12 @@ var setupSeekBars = function()
          offsetX = event.pageX - $(this).offset().left;
          var barWidth = $(this).width();
          var seekBarFillRatio = offsetX / barWidth;
-
+         
     // set song Control or Volume based on slider movement  
-    if($seekBar.parent().hasClass("seek-control"))
+    var seekType = event.target.parentElement.className;
+    if(seekType == "seek-control" && currentSoundFile)
     { seek( seekBarFillRatio * currentSoundFile.getDuration()  ); }
-    else   
+    else
     { setVolume(  seekBarFillRatio *100  ); }
  
          // set slider
@@ -260,9 +261,10 @@ var setupSeekBars = function()
             var seekBarFillRatio = offsetX / barWidth;
           
     // set song Control or Volume based on slider movement  
-    if($seekBar.parent().hasClass("seek-control"))
+    var seekType = event.target.parentElement.parentElement.className;
+    if(seekType == "seek-control" && currentSoundFile)
     { seek( seekBarFillRatio * currentSoundFile.getDuration()  ); }
-    else 
+    else if( seekType == "control-group volume" )
     { setVolume(  seekBarFillRatio *100  ); } 
          
             updateSeekPercentage($seekBar, seekBarFillRatio);
@@ -350,7 +352,8 @@ var playerBarPauseButton = '<span class="ion-pause"></span>';
  var currentlyPlayingSongNumber = null;
  var currentSongFromAlbum = null;
  var currentSoundFile = null;
- var musicPath = 'C:\\\\Users\\W\\bloc\\bloc-jams';
+ //var musicPath = 'C:\\\\Users\\W\\bloc\\bloc-jams';
+ var musicPath = '';
  var currentVolume = 80;
 
  var songPaused = false;
